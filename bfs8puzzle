@@ -75,3 +75,4 @@ print("BFS Path to Solution:")
 if path_bfs:
     for step in path_bfs:
         print_puzzle(step)
+
