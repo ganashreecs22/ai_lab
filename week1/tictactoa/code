@@ -161,3 +161,5 @@ def minimax(board, isMaximizing):
 
 
 while not checkWin():
+   compMove()
+   playerMove()
