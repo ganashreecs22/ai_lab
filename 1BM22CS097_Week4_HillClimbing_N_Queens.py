@@ -1,73 +1,66 @@
 import random
 
-# Function to calculate the number of conflicts
-def calculate_conflicts(board):
-    conflicts = 0
-    n = len(board)
+def calculate_cost(state):
+    attacking_pairs = 0
+    n = len(state)
     for i in range(n):
         for j in range(i + 1, n):
-            if board[i] == board[j]:  # Same row conflict
-                conflicts += 1
-            if abs(board[i] - board[j]) == abs(i - j):  # Diagonal conflict
-                conflicts += 1
-    return conflicts
+            if state[i] == state[j] or abs(state[i] - state[j]) == abs(i - j):
+                attacking_pairs += 1
+    return attacking_pairs
 
-# Function to print the board
-def print_board(board):
-    n = len(board)
+def generate_neighbours(state):
+    neighbours = []
+    n = len(state)
+    for i in range(n):
+        for j in range(i + 1, n):
+            neighbour = state[:]
+            neighbour[i], neighbour[j] = neighbour[j], neighbour[i]
+            neighbours.append(neighbour)
+    return neighbours
+
+def print_board(state):
+    n = len(state)
     for row in range(n):
         line = ""
         for col in range(n):
-            if board[col] == row:
-                line += " Q "
+            if state[col] == row:
+                line += "Q "
             else:
-                line += " . "
+                line += ". "
         print(line)
-    print("\n")
+    print()
 
-# Hill Climbing algorithm for N-Queens
-def hill_climbing_n_queens(initial_state):
-    n = len(initial_state)
-    current_board = initial_state[:]
-    current_conflicts = calculate_conflicts(current_board)
+def hill_climbing(initial_state):
+    current_state = initial_state
+    current_cost = calculate_cost(current_state)
+    step = 0
+
+    print(f"Step {step}: Initial state")
+    print_board(current_state)
+    print(f"Cost = {current_cost}\n")
 
     while True:
-        neighbors = []
-        for col in range(n):
-            for row in range(n):
-                if row != current_board[col]:
-                    neighbor = current_board[:]
-                    neighbor[col] = row
-                    neighbors.append(neighbor)
+        step += 1
+        neighbours = generate_neighbours(current_state)
+        neighbour_costs = [calculate_cost(neighbour) for neighbour in neighbours]
+        min_cost = min(neighbour_costs)
 
-        # Find the neighbor with the least conflicts
-        next_board = min(neighbors, key=calculate_conflicts)
-        next_conflicts = calculate_conflicts(next_board)
+        if min_cost >= current_cost:
+            print(f"Step {step}: Reached local minimum")
+            print(f"Final state:")
+            print_board(current_state)
+            print(f"Final cost = {current_cost}\n")
+            return current_state, current_cost
+        else:
+            best_neighbour = neighbours[neighbour_costs.index(min_cost)]
+            print(f"Step {step}: Move to better neighbour")
+            print_board(best_neighbour)
+            print(f"Cost = {min_cost}\n")
 
-        # If no neighbor has fewer conflicts, stop
-        if next_conflicts >= current_conflicts:
-            break
+            current_state = best_neighbour
+            current_cost = min_cost
+            
+initial_state = [3, 1, 2, 0]
 
-        # Move to the best neighbor
-        current_board = next_board
-        current_conflicts = next_conflicts
-
-    return current_board, current_conflicts
-
-# Main function to execute Hill Climbing for 4-Queens problem
-def main():
-    # Initial state as per the problem:
-    initial_state = [3, 1, 2, 0]
-
-    print("Initial board configuration:")
-    print_board(initial_state)
-
-    final_board, final_conflicts = hill_climbing_n_queens(initial_state)
-
-    print("Final board configuration after Hill Climbing:")
-    print_board(final_board)
-
-    print(f"Number of conflicts: {final_conflicts}")
-
-if __name__ == "__main__":
-    main()
+final_state, final_cost = hill_climbing(initial_state)
